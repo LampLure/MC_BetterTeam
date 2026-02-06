@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "betterteam",
+	"version": "${version}",
+	"name": "BetterTeam",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"LampLure"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/betterteam/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"betterteam.BetterTeam"
+		],
+		"client": [
+			"betterteam.client.BetterTeamClient"
+		],
+		"modmenu": [
+			"betterteam.client.BetterTeamModMenu"
+		],
+		"fabric-datagen": [
+			"betterteam.BetterTeamDataGenerator"
+		]
+	},
+	"mixins": [
+		"betterteam.mixins.json"
+	],
+	"depends": {
+		"fabricloader": "*",
+		"minecraft": "*",
+		"java": "*",
+		"fabric-api": "*",
+		"modmenu": "*"
+	}
+}

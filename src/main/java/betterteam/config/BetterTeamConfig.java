@@ -167,6 +167,10 @@ public class BetterTeamConfig {
 	}
 
 	private static Path getMemberFilePath(String teamName) {
+		return getMembersDir().resolve(sanitizeFileName(teamName) + ".txt");
+	}
+
+	private static Path getLegacyMemberFilePath(String teamName) {
 		return getMembersDir().resolve(sanitizeFileName(teamName));
 	}
 
@@ -195,6 +199,9 @@ public class BetterTeamConfig {
 				continue;
 			}
 			Path file = getMemberFilePath(team.name);
+			if (!Files.exists(file)) {
+				file = getLegacyMemberFilePath(team.name);
+			}
 			if (!Files.exists(file)) {
 				continue;
 			}
@@ -229,8 +236,9 @@ public class BetterTeamConfig {
 				continue;
 			}
 			String fileName = sanitizeFileName(team.name);
-			validIds.add(fileName);
+			validIds.add(fileName + ".txt");
 			Path file = getMemberFilePath(team.name);
+			Path legacyFile = getLegacyMemberFilePath(team.name);
 			List<String> lines = new ArrayList<>();
 			for (String member : team.members) {
 				if (member == null) {
@@ -243,6 +251,10 @@ public class BetterTeamConfig {
 			}
 			try {
 				Files.write(file, lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			} catch (IOException ignored) {
+			}
+			try {
+				Files.deleteIfExists(legacyFile);
 			} catch (IOException ignored) {
 			}
 		}

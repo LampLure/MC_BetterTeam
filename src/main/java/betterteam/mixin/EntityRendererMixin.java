@@ -49,8 +49,9 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
 		if (pos == null) {
 			return;
 		}
+		pos = pos.add(0.0D, 0.25D, 0.0D);
 		boolean seeThrough = !state.sneaking;
-		int yOffset = ("deadmau5".equals(name) ? -10 : 0) - 2;
+		int yOffset = "deadmau5".equals(name) ? -10 : 0;
 		matrices.push();
 		matrices.translate(pos.x, pos.y, pos.z);
 		matrices.multiply(MinecraftClient.getInstance().getEntityRenderDispatcher().getRotation());

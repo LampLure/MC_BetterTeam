@@ -3,6 +3,7 @@ package betterteam.mixin;
 import betterteam.client.BetterTeamClient;
 import betterteam.config.BetterTeamConfig;
 import betterteam.config.TeamConfig;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,10 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPlayerInteractionManager.class)
 public class ClientPlayerInteractionManagerMixin {
 	@Inject(method = "attackEntity", at = @At("HEAD"), cancellable = true)
-	private void betterteam$preventFriendlyFire(PlayerEntity player, Entity target, CallbackInfo ci) {
-		if (!(target instanceof PlayerEntity targetPlayer)) {
-			return;
-		}
+	private void betterteam$preventFriendlyFire(ClientPlayerEntity player, Entity target, CallbackInfo ci) {
 		BetterTeamConfig config = BetterTeamClient.getConfig();
 		if (config == null) {
 			return;
@@ -26,9 +24,25 @@ public class ClientPlayerInteractionManagerMixin {
 		if (team == null || !team.preventFriendlyFire) {
 			return;
 		}
-		String name = targetPlayer.getName().getString();
-		if (team.isMember(name)) {
-			ci.cancel();
+		if (target instanceof PlayerEntity targetPlayer) {
+			String name = targetPlayer.getName().getString();
+			boolean isMember = team.isMember(name);
+			boolean isFriend = team.isWhitelist() ? isMember : !isMember;
+			if (isFriend) {
+				ci.cancel();
+			}
+			return;
+		}
+		for (Entity passenger : target.getPassengerList()) {
+			if (passenger instanceof PlayerEntity passengerPlayer) {
+				String name = passengerPlayer.getName().getString();
+				boolean isMember = team.isMember(name);
+				boolean isFriend = team.isWhitelist() ? isMember : !isMember;
+				if (isFriend) {
+					ci.cancel();
+					return;
+				}
+			}
 		}
 	}
 }

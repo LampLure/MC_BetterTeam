@@ -2,6 +2,8 @@ package betterteam.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class TeamConfig {
 	public String id;
@@ -49,11 +51,12 @@ public class TeamConfig {
 			return false;
 		}
 		String trimmed = name.trim();
-		if (trimmed.isEmpty()) {
+		String cleaned = stripColorCodes(trimmed);
+		if (cleaned.isEmpty()) {
 			return false;
 		}
 		for (String member : members) {
-			if (member != null && member.equalsIgnoreCase(trimmed)) {
+			if (matchesMemberRule(member, cleaned)) {
 				return true;
 			}
 		}
@@ -82,6 +85,63 @@ public class TeamConfig {
 			return;
 		}
 		members.removeIf(member -> member != null && member.equalsIgnoreCase(trimmed));
+	}
+
+	private boolean matchesMemberRule(String member, String target) {
+		if (member == null) {
+			return false;
+		}
+		String rule = member.trim();
+		if (rule.isEmpty()) {
+			return false;
+		}
+		if (!looksLikeRegex(rule)) {
+			return rule.equalsIgnoreCase(target);
+		}
+		try {
+			return Pattern.compile(rule, Pattern.CASE_INSENSITIVE).matcher(target).matches();
+		} catch (PatternSyntaxException e) {
+			return rule.equalsIgnoreCase(target);
+		}
+	}
+
+	private boolean looksLikeRegex(String value) {
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			switch (c) {
+				case '.':
+				case '*':
+				case '+':
+				case '?':
+				case '|':
+				case '(':
+				case ')':
+				case '[':
+				case ']':
+				case '{':
+				case '}':
+				case '^':
+				case '$':
+				case '\\':
+					return true;
+				default:
+					break;
+			}
+		}
+		return false;
+	}
+
+	private String stripColorCodes(String value) {
+		StringBuilder builder = new StringBuilder(value.length());
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			if (c == '§' && i + 1 < value.length()) {
+				i++;
+				continue;
+			}
+			builder.append(c);
+		}
+		return builder.toString().trim();
 	}
 
 	private float normalizeOpacity(Float value, float fallback) {

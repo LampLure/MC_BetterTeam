@@ -8,16 +8,13 @@
 		"LampLure"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"modrinth": "https://modrinth.com/project/betterteam",
+		"github": "https://github.com/LampLure/MC_BetterTeam"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/betterteam/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
-		"main": [
-			"betterteam.BetterTeam"
-		],
 		"client": [
 			"betterteam.client.BetterTeamClient"
 		],

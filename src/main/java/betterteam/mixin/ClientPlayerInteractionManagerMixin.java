@@ -3,7 +3,6 @@ package betterteam.mixin;
 import betterteam.client.BetterTeamClient;
 import betterteam.config.BetterTeamConfig;
 import betterteam.config.TeamConfig;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public class ClientPlayerInteractionManagerMixin {
-	@Inject(method = "attackEntity", at = @At("HEAD"), cancellable = true)
-	private void betterteam$preventFriendlyFire(ClientPlayerEntity player, Entity target, CallbackInfo ci) {
+	@Inject(method = "attackEntity(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/entity/Entity;)V", at = @At("HEAD"), cancellable = true)
+	private void betterteam$preventFriendlyFire(PlayerEntity player, Entity target, CallbackInfo ci) {
 		BetterTeamConfig config = BetterTeamClient.getConfig();
 		if (config == null) {
 			return;

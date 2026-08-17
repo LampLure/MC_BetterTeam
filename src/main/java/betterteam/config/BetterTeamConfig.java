@@ -18,7 +18,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
 
 public class BetterTeamConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -88,7 +88,7 @@ public class BetterTeamConfig {
 		TeamConfig team = new TeamConfig();
 		team.id = UUID.randomUUID().toString();
 		team.name = "队伍" + (teams.size() + 1);
-		team.color = Formatting.GREEN.getName();
+		team.color = ChatFormatting.GREEN.getName();
 		team.whitelist = true;
 		team.outline = true;
 		team.preventFriendlyFire = true;
@@ -117,8 +117,8 @@ public class BetterTeamConfig {
 			if (team.name == null || team.name.isBlank()) {
 				team.name = "队伍" + (teams.indexOf(team) + 1);
 			}
-			if (team.color == null || Formatting.byName(team.color) == null) {
-				team.color = Formatting.GREEN.getName();
+			if (team.color == null || ChatFormatting.getByName(team.color) == null) {
+				team.color = ChatFormatting.GREEN.getName();
 			}
 			if (team.whitelist == null) {
 				team.whitelist = true;

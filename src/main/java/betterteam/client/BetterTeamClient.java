@@ -4,25 +4,25 @@ import org.lwjgl.glfw.GLFW;
 
 import betterteam.client.gui.BetterTeamConfigScreen;
 import betterteam.config.BetterTeamConfig;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 
 public class BetterTeamClient implements ClientModInitializer {
 	private static BetterTeamConfig config;
-	private static KeyBinding openConfigKey;
+	private static KeyMapping openConfigKey;
 
 	@Override
 	public void onInitializeClient() {
 		config = BetterTeamConfig.load();
-		openConfigKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+		openConfigKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.betterteam.open_config",
-			InputUtil.Type.KEYSYM,
+			InputConstants.Type.KEYSYM,
 			GLFW.GLFW_KEY_U,
-			"category.betterteam"
+			KeyMapping.Category.MISC
 		));
 		ClientTickEvents.END_CLIENT_TICK.register(BetterTeamClient::onEndClientTick);
 	}
@@ -31,11 +31,11 @@ public class BetterTeamClient implements ClientModInitializer {
 		return config;
 	}
 
-	private static void onEndClientTick(MinecraftClient client) {
-		while (openConfigKey.wasPressed()) {
-			client.setScreen(new BetterTeamConfigScreen(client.currentScreen));
+	private static void onEndClientTick(Minecraft client) {
+		while (openConfigKey.consumeClick()) {
+			client.setScreen(new BetterTeamConfigScreen(client.screen));
 		}
-		if (client.world == null) {
+		if (client.level == null) {
 			return;
 		}
 	}

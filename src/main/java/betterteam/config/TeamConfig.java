@@ -135,7 +135,7 @@ public class TeamConfig {
 		StringBuilder builder = new StringBuilder(value.length());
 		for (int i = 0; i < value.length(); i++) {
 			char c = value.charAt(i);
-			if (c == '§' && i + 1 < value.length()) {
+			if (c == '\u00a7' && i + 1 < value.length()) {
 				i++;
 				continue;
 			}

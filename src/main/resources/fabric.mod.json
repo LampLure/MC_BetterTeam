@@ -3,7 +3,7 @@
 	"id": "betterteam",
 	"version": "${version}",
 	"name": "BetterTeam",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "BetterTeam - 客户端队伍管理模组，提供玩家标签着色、防误伤等功能",
 	"authors": [
 		"LampLure"
 	],
@@ -29,9 +29,9 @@
 		"betterteam.mixins.json"
 	],
 	"depends": {
-		"fabricloader": "*",
-		"minecraft": "*",
-		"java": "*",
+		"fabricloader": ">=0.19.2",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
 		"fabric-api": "*",
 		"modmenu": "*"
 	}

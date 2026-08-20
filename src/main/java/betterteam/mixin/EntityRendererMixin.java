@@ -25,11 +25,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin<T extends Entity, S extends EntityRenderState> {
-    private static final float BETTERTEAM_NAME_TAG_HEIGHT_OFFSET = 0.5F;
+    private static final float BETTERTEAM_NAME_TAG_HEIGHT_OFFSET = 0.25F;
 
     @Inject(method = "shouldShowName", at = @At("HEAD"), cancellable = true)
     private void betterteam$forceCustomNameTagVisible(T entity, double distanceToCameraSq, CallbackInfoReturnable<Boolean> cir) {
-        if (entity instanceof Player player && betterteam$getMatchingTeam(player) != null) {
+        if (entity instanceof Player player && betterteam$getRenderTeam(player) != null) {
             cir.setReturnValue(true);
         }
     }
@@ -43,7 +43,7 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
             return;
         }
 
-        TeamConfig team = betterteam$getMatchingTeam(player);
+        TeamConfig team = betterteam$getRenderTeam(player);
         if (team == null) {
             return;
         }
@@ -63,7 +63,7 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
                 Component.literal(rawDisplayName),
                 betterteam$withOpacity(team.getNameTextColorInt(), team.getNameTextOpacity()),
                 betterteam$withOpacity(team.getNameBackgroundColorInt(), team.getNameBackgroundOpacity()),
-                true,
+                !state.isDiscrete,
                 BETTERTEAM_NAME_TAG_HEIGHT_OFFSET
         );
     }
@@ -105,6 +105,20 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
                 holder.betterteam$getBackgroundColor(),
                 0
         );
+        if (holder.betterteam$isSeeThrough()) {
+            collector.submitText(
+                    poseStack,
+                    xOffset,
+                    0.0F,
+                    text,
+                    false,
+                    Font.DisplayMode.NORMAL,
+                    state.lightCoords,
+                    holder.betterteam$getColor(),
+                    0,
+                    0
+            );
+        }
         poseStack.popPose();
         ci.cancel();
     }
@@ -114,7 +128,7 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
         return (alpha << 24) | (rgb & 0xFFFFFF);
     }
 
-    private static TeamConfig betterteam$getMatchingTeam(Player player) {
+    private static TeamConfig betterteam$getRenderTeam(Player player) {
         BetterTeamConfig config = BetterTeamClient.getConfig();
         if (config == null) {
             return null;
@@ -125,6 +139,8 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
             return null;
         }
 
-        return team.isMember(player.getDisplayName().getString()) ? team : null;
+        boolean isMember = team.isMember(player.getDisplayName().getString());
+        boolean shouldRender = team.isWhitelist() ? isMember : !isMember;
+        return shouldRender ? team : null;
     }
 }

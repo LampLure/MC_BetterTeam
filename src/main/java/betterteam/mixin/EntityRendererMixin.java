@@ -1,10 +1,18 @@
 package betterteam.mixin;
 
+import betterteam.client.BetterTeamClient;
+import betterteam.client.CustomNameTagHolder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import betterteam.config.BetterTeamConfig;
+import betterteam.config.TeamConfig;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.player.Player;
@@ -16,33 +24,95 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin<T extends Entity, S extends EntityRenderState> {
+    private static final float BETTERTEAM_NAME_TAG_HEIGHT_OFFSET = 0.5F;
 
     @Inject(method = "extractRenderState", at = @At("RETURN"))
-    private void testForceAllPlayersGreen(T entity, S state, float tickDelta, CallbackInfo ci) {
-        // 1. 只针对玩家实体
-        if (entity instanceof Player player) {
-            
-            // 2. 强制使用高亮绿色 (0x55FF55)
-            TextColor greenColor = TextColor.fromRgb(0x55FF55);
-            
-            // 3. 强制覆盖 nameTag 文本并加粗变绿
-            state.nameTag = Component.literal(player.getName().getString())
-                    .setStyle(Style.EMPTY.withColor(greenColor).withBold(true));
+    private void betterteam$extractCustomNameTag(T entity, S state, float tickDelta, CallbackInfo ci) {
+        if (state instanceof CustomNameTagHolder holder) {
+            holder.betterteam$clearCustomTag();
+        }
+        if (!(entity instanceof Player player) || !(state instanceof CustomNameTagHolder holder)) {
+            return;
+        }
 
-            // 4. 强制设置挂载点，即使玩家下蹲或距离过远也能挂载
+        BetterTeamConfig config = BetterTeamClient.getConfig();
+        if (config == null) {
+            return;
+        }
+
+        TeamConfig team = config.getActiveTeam();
+        if (team == null) {
+            return;
+        }
+
+        String rawDisplayName = player.getDisplayName().getString();
+        if (!team.isMember(rawDisplayName)) {
+            return;
+        }
+
+        state.nameTag = null;
+        if (state.nameTagAttachment == null) {
+            try {
+                state.nameTagAttachment = player.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, player.getYRot());
+            } catch (Throwable ignored) {
+            }
             if (state.nameTagAttachment == null) {
-                try {
-                    state.nameTagAttachment = player.getAttachments().getNullable(
-                            EntityAttachment.NAME_TAG, 0, player.getYRot()
-                    );
-                } catch (Throwable ignored) {
-                }
-
-                // 兜底偏移向量
-                if (state.nameTagAttachment == null) {
-                    state.nameTagAttachment = new Vec3(0.0, player.getBbHeight() + 0.5, 0.0);
-                }
+                state.nameTagAttachment = new Vec3(0.0, player.getBbHeight(), 0.0);
             }
         }
+
+        holder.betterteam$setCustomTag(
+                Component.literal(rawDisplayName),
+                betterteam$withOpacity(team.getNameTextColorInt(), team.getNameTextOpacity()),
+                betterteam$withOpacity(team.getNameBackgroundColorInt(), team.getNameBackgroundOpacity()),
+                true,
+                BETTERTEAM_NAME_TAG_HEIGHT_OFFSET
+        );
+    }
+
+    @Inject(
+            method = "submitNameDisplay(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void betterteam$submitCustomNameTag(S state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState cameraState, CallbackInfo ci) {
+        if (!(state instanceof CustomNameTagHolder holder)) {
+            return;
+        }
+        if (holder.betterteam$getCustomTag() == null) {
+            return;
+        }
+
+        Vec3 attachment = state.nameTagAttachment != null
+                ? state.nameTagAttachment
+                : new Vec3(0.0, state.boundingBoxHeight, 0.0);
+        FormattedCharSequence text = holder.betterteam$getCustomTag().getVisualOrderText();
+        Font font = Minecraft.getInstance().font;
+
+        poseStack.pushPose();
+        poseStack.translate(attachment.x, attachment.y + holder.betterteam$getHeightOffset(), attachment.z);
+        poseStack.mulPose(cameraState.orientation);
+        poseStack.scale(-0.025F, -0.025F, 0.025F);
+
+        float xOffset = -font.width(text) / 2.0F;
+        collector.submitText(
+                poseStack,
+                xOffset,
+                0.0F,
+                text,
+                false,
+                holder.betterteam$isSeeThrough() ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL,
+                state.lightCoords,
+                holder.betterteam$getColor(),
+                holder.betterteam$getBackgroundColor(),
+                0
+        );
+        poseStack.popPose();
+        ci.cancel();
+    }
+
+    private static int betterteam$withOpacity(int rgb, float opacity) {
+        int alpha = Math.round(Math.max(0.0F, Math.min(1.0F, opacity)) * 255.0F) & 0xFF;
+        return (alpha << 24) | (rgb & 0xFFFFFF);
     }
 }

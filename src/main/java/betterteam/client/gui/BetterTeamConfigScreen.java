@@ -196,8 +196,8 @@ class BetterTeamEditTeamScreen extends Screen {
 		}).bounds(centerX - 100, y, 200, 20).build());
 		y += 30;
 		memberField = new EditBox(font, centerX - 100, y, 150, 20, Component.literal(""));
-		memberField.setMaxLength(32);
-		memberField.setHint(Component.literal("玩家名称"));
+		memberField.setMaxLength(256);
+		memberField.setHint(Component.literal("玩家名称或正则"));
 		addRenderableWidget(memberField);
 		addRenderableWidget(Button.builder(Component.literal("添加"), button -> {
 			String name = memberField.getValue().trim();

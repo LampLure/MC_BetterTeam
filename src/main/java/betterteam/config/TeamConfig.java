@@ -71,9 +71,12 @@ public class TeamConfig {
 		if (trimmed.isEmpty()) {
 			return;
 		}
-		if (!isMember(trimmed)) {
-			members.add(trimmed);
+		for (String member : members) {
+			if (member != null && member.trim().equalsIgnoreCase(trimmed)) {
+				return;
+			}
 		}
+		members.add(trimmed);
 	}
 
 	public void removeMember(String name) {

@@ -4,7 +4,9 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"ClientPlayerInteractionManagerMixin",
-		"EntityRendererMixin"
+		"EntityRendererMixin",
+		"EntityRenderStateMixin",
+		"AvatarRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

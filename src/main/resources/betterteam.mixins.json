@@ -5,8 +5,7 @@
 	"client": [
 		"ClientPlayerInteractionManagerMixin",
 		"EntityRendererMixin",
-		"EntityRenderStateMixin",
-		"AvatarRendererMixin"
+		"EntityRenderStateMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

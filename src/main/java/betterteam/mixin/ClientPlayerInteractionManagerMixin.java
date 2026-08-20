@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MultiPlayerGameMode.class)
 public class ClientPlayerInteractionManagerMixin {
-	@Inject(method = "attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "attack", at = @At("HEAD"), cancellable = true)
 	private void betterteam$preventFriendlyFire(Player player, Entity target, CallbackInfo ci) {
 		BetterTeamConfig config = BetterTeamClient.getConfig();
 		if (config == null) {

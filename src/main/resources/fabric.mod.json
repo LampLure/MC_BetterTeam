@@ -3,7 +3,7 @@
 	"id": "betterteam",
 	"version": "${version}",
 	"name": "BetterTeam",
-	"description": "BetterTeam - 客户端队伍管理模组，提供玩家标签着色、防误伤等功能",
+	"description": "Client-side team helper with configurable labels and friendly-fire protection.",
 	"authors": [
 		"LampLure"
 	],
@@ -29,7 +29,7 @@
 		"betterteam.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.19.2",
+		"fabricloader": ">=0.19.3",
 		"minecraft": "~26.1.2",
 		"java": ">=25",
 		"fabric-api": "*",

@@ -5,12 +5,16 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import net.minecraft.ChatFormatting;
+
 public class TeamConfig {
 	public String id;
 	public String name;
 	public String color;
 	public Boolean whitelist;
 	public boolean outline;
+	public HighlightMode highlightMode;
+	public String highlightColor;
 	public boolean preventFriendlyFire;
 	public String nameTextColor;
 	public String nameBackgroundColor;
@@ -18,8 +22,46 @@ public class TeamConfig {
 	public Float nameBackgroundOpacity;
 	public List<String> members = new ArrayList<>();
 
+	public enum HighlightMode {
+		OFF("关闭"),
+		SNEAKING("蹲伏时开启"),
+		ALWAYS("一直开启");
+
+		private final String displayName;
+
+		HighlightMode(String displayName) {
+			this.displayName = displayName;
+		}
+
+		public String getDisplayName() {
+			return displayName;
+		}
+	}
+
 	public boolean isWhitelist() {
 		return whitelist == null || whitelist;
+	}
+
+	public HighlightMode getHighlightMode() {
+		if (highlightMode != null) {
+			return highlightMode;
+		}
+		return outline ? HighlightMode.ALWAYS : HighlightMode.OFF;
+	}
+
+	public ChatFormatting getHighlightFormatting() {
+		if (highlightColor != null) {
+			ChatFormatting formatting = ChatFormatting.getByName(highlightColor);
+			if (formatting != null && formatting.isColor()) {
+				return formatting;
+			}
+		}
+		return ChatFormatting.WHITE;
+	}
+
+	public int getHighlightColorValue() {
+		Integer colorValue = getHighlightFormatting().getColor();
+		return colorValue != null ? colorValue : 0xFFFFFF;
 	}
 
 	public float getNameTextOpacity() {
@@ -50,8 +92,7 @@ public class TeamConfig {
 		if (name == null) {
 			return false;
 		}
-		String trimmed = name.trim();
-		String cleaned = stripColorCodes(trimmed);
+		String cleaned = stripColorCodes(name.trim());
 		if (cleaned.isEmpty()) {
 			return false;
 		}
@@ -71,12 +112,9 @@ public class TeamConfig {
 		if (trimmed.isEmpty()) {
 			return;
 		}
-		for (String member : members) {
-			if (member != null && member.trim().equalsIgnoreCase(trimmed)) {
-				return;
-			}
+		if (!isMember(trimmed)) {
+			members.add(trimmed);
 		}
-		members.add(trimmed);
 	}
 
 	public void removeMember(String name) {
@@ -135,16 +173,8 @@ public class TeamConfig {
 	}
 
 	private String stripColorCodes(String value) {
-		StringBuilder builder = new StringBuilder(value.length());
-		for (int i = 0; i < value.length(); i++) {
-			char c = value.charAt(i);
-			if (c == '\u00a7' && i + 1 < value.length()) {
-				i++;
-				continue;
-			}
-			builder.append(c);
-		}
-		return builder.toString().trim();
+		String stripped = ChatFormatting.stripFormatting(value);
+		return stripped == null ? "" : stripped.trim();
 	}
 
 	private float normalizeOpacity(Float value, float fallback) {

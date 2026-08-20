@@ -91,6 +91,8 @@ public class BetterTeamConfig {
 		team.color = ChatFormatting.GREEN.getName();
 		team.whitelist = true;
 		team.outline = true;
+		team.highlightMode = TeamConfig.HighlightMode.ALWAYS;
+		team.highlightColor = ChatFormatting.WHITE.getName();
 		team.preventFriendlyFire = true;
 		team.nameTextColor = "#FFFFFF";
 		team.nameBackgroundColor = "#000000";
@@ -110,12 +112,13 @@ public class BetterTeamConfig {
 		if (teams.isEmpty()) {
 			activeTeamId = null;
 		}
-		for (TeamConfig team : teams) {
+		for (int i = 0; i < teams.size(); i++) {
+			TeamConfig team = teams.get(i);
 			if (team.id == null) {
 				team.id = UUID.randomUUID().toString();
 			}
 			if (team.name == null || team.name.isBlank()) {
-				team.name = "队伍" + (teams.indexOf(team) + 1);
+				team.name = "队伍" + (i + 1);
 			}
 			if (team.color == null || ChatFormatting.getByName(team.color) == null) {
 				team.color = ChatFormatting.GREEN.getName();
@@ -123,6 +126,18 @@ public class BetterTeamConfig {
 			if (team.whitelist == null) {
 				team.whitelist = true;
 			}
+			if (team.highlightMode == null) {
+				team.highlightMode = team.outline ? TeamConfig.HighlightMode.ALWAYS : TeamConfig.HighlightMode.OFF;
+			}
+			if (team.highlightColor == null) {
+				team.highlightColor = ChatFormatting.WHITE.getName();
+			} else {
+				ChatFormatting formatting = ChatFormatting.getByName(team.highlightColor);
+				if (formatting == null || !formatting.isColor()) {
+					team.highlightColor = ChatFormatting.WHITE.getName();
+				}
+			}
+			team.outline = team.getHighlightMode() != TeamConfig.HighlightMode.OFF;
 			if (team.nameTextColor == null) {
 				team.nameTextColor = "#FFFFFF";
 			}

@@ -5,7 +5,8 @@
 	"client": [
 		"ClientPlayerInteractionManagerMixin",
 		"EntityRendererMixin",
-		"EntityRenderStateMixin"
+		"MinecraftMixin",
+		"NameTagSubmitMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
